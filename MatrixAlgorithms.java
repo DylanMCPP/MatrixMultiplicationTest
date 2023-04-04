@@ -63,35 +63,35 @@ public class MatrixAlgorithms {
         // define a 3d array, that can store 4 newSize x newSize matrices
         int[][][] newMatrix = new int[newSize][newSize][4];
 
-        // Quartile 1 | Quartile 2
+        // Quartile 0 | Quartile 1
         // -----------|------------
-        // Quartile 3 | Quartile 4
-        for (int quartile = 1; quartile <=4; quartile++) {
+        // Quartile 2 | Quartile 3
+        for (int quartile = 0; quartile <= 3; quartile++) {
             switch(quartile) {
 
                 // stores the first matrix quartile as a 2d array in the first layer of the 3d matrix
-                case 1:
+                case 0:
                     for (int i = 0; i < newSize; i++) {
                         for (int j = 0; j < newSize; j++) {
                             newMatrix[i][j][quartile] = startMatrix[i][j];
                         }
                     } break;
                 // stores the second matrix quartile as a 2d array in the second layer of the 3d matrix
-                case 2:
+                case 1:
                     for (int i = 0; i < newSize; i++) {
                         for (int j = 0; j < newSize; j++) {
                             newMatrix[i][j][quartile] = startMatrix[i][j + newSize];
                         }
                     } break;
                 // stores the third matrix quartile as a 2d array in the third layer of the 3d matrix
-                case 3:
+                case 2:
                     for (int i = 0; i < newSize; i++) {
                         for (int j = 0; j < newSize; j++) {
                             newMatrix[i][j][quartile] = startMatrix[i + newSize][j];
                         }
                     } break;
                 // stores the fourth matrix quartile as a 2d array in the first layer of the 3d matrix
-                case 4:
+                case 3:
                     for (int i = 0; i < newSize; i++) {
                         for (int j = 0; j < newSize; j++) {
                             newMatrix[i][j][quartile] = startMatrix[i + newSize][j + newSize];
@@ -99,6 +99,7 @@ public class MatrixAlgorithms {
                     } break;
             }
         }
+        // return the resulting 4 split matrices
         return newMatrix;
     }
 
