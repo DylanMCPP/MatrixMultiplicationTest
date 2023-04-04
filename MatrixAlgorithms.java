@@ -177,6 +177,81 @@ public class MatrixAlgorithms {
      * @return
      */
     public static int[][] strassensMult(int[][] matrixA, int[][] matrixB) {
-        return null;
+        int size = matrixA.length;
+        int[][] finalMatrix = new int[size][size];
+
+        if (size == 1)
+            finalMatrix[0][0] = matrixA[0][0] * matrixB[0][0];
+        // else statement runs for any matrix larger than 1 x 1, and recursively calls until a 1 x 1 matrix is reached
+        else {
+
+            // declare 8 sub-matrices, 4 for each multiplicand matrix
+            int[][] a11, a12, a21, a22, b11, b12, b21, b22;
+
+            // define each sub-matrix as it's appropriate quartile for both multiplicands
+            int[][][] matrixASplit = matrixSplit(matrixA);
+            a11 = matrixASplit[0].clone();
+            a12 = matrixASplit[1].clone();
+            a21 = matrixASplit[2].clone();
+            a22 = matrixASplit[3].clone();
+
+            int[][][] matrixBSplit = matrixSplit(matrixB);
+            b11 = matrixBSplit[0].clone();
+            b12 = matrixBSplit[1].clone();
+            b21 = matrixBSplit[2].clone();
+            b22 = matrixBSplit[3].clone();
+
+            // declare and compute strassen's 7 multiplications
+            int[][] P, Q, R, S, T, U, V;
+            P = strassensMult(matrixAdd(a11, a22), matrixAdd(b11,b22));
+            Q = strassensMult(matrixAdd(a21, a22), b11);
+            R = strassensMult(a11, matrixSub(b12,b22));
+            S = strassensMult(a22, matrixSub(b21, b22));
+            T = strassensMult(matrixAdd(a11,a12), b22);
+            U = strassensMult(matrixSub(a21, a11), matrixAdd(b11, b12));
+            V = strassensMult(matrixSub(a12, a22), matrixAdd(b21, b22));
+
+            // declare and compute sub-matrices by adding and subtracting strassen's 7 multiplications
+            int[][] c11, c12, c21, c22;
+            c11 = matrixAdd(matrixAdd(P, matrixSub(S, T)), V);
+            c12 = matrixAdd(R, T);
+            c21 = matrixAdd(Q, S);
+            c22 = matrixAdd(matrixAdd(P, matrixSub(R, Q)), U);
+
+
+            // combine the sub-matrices into the final multiplication product for this function call
+            for (int i = 0; i < (size / 2); i++) {
+                for (int j = 0; j < (size / 2); j++) {
+                    finalMatrix[i][j] = c11[i][j] + c12[i][j];
+                    finalMatrix[i][j + (size/2)] = c11[i][j + (size/2)] + c12[i][j + (size/2)];
+                    finalMatrix[i + (size/2)][j] = c21[i][j] + c22[i][j];
+                    finalMatrix[i + (size/2)][j + (size/2)] = c11[i][j + (size/2)] + c12[i][j + (size/2)];
+                }
+            }
+        }
+
+        //returns the result of this call of matrix multiplication
+        return finalMatrix;
+    }
+
+    /*
+     * internal helper method that subtracts two square 2d arrays of identical dimensions,
+     * and returns the sum (matrixA minus matrixB)
+     */
+    private static int[][] matrixSub(int[][] matrixA, int[][] matrixB) {
+
+        // copy the first array to a new memory location
+        int[][] sumMatrix = matrixA.clone();
+        // define the length of the square matrices as a varaible
+        int size = sumMatrix.length;
+
+        // adds each value in the second array to the first array
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                sumMatrix[i][j] -= matrixB[i][j];
+            }
+        }
+        // return the result
+        return sumMatrix;
     }
 }
