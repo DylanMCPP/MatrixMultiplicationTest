@@ -48,14 +48,58 @@ public class MatrixAlgorithms {
      * @return
      */
     public static int[][] divAndConqMult(int[][] matrixA, int[][] matrixB) {
-        return null;
+
+        int size = matrixA.length;
+        int[][] finalMatrix = new int[size][size];
+
+        if (size == 1)
+            finalMatrix[0][0] = matrixA[0][0] * matrixB[0][0];
+        // else statement runs for any matrix larger than 1 x 1, and recursively calls until a 1 x 1 matrix is reached
+        else {
+
+            // declare 8 sub-matrices, 4 for each multiplicand matrix
+            int[][] a11, a12, a21, a22, b11, b12, b21, b22;
+
+            // define each sub-matrix as it's appropriate quartile for both multiplicands
+            int[][][] matrixASplit = matrixSplit(matrixA);
+            a11 = matrixASplit[0].clone();
+            a12 = matrixASplit[1].clone();
+            a21 = matrixASplit[2].clone();
+            a22 = matrixASplit[3].clone();
+
+            int[][][] matrixBSplit = matrixSplit(matrixB);
+            b11 = matrixBSplit[0].clone();
+            b12 = matrixBSplit[1].clone();
+            b21 = matrixBSplit[2].clone();
+            b22 = matrixBSplit[3].clone();
+
+            // declare and compute sub-matrices with the addition helper method and recursive calls
+            int[][] c11, c12, c21, c22;
+            c11 = matrixAdd(divAndConqMult(a11, b11), divAndConqMult(a12,b21));
+            c12 = matrixAdd(divAndConqMult(a11, b12), divAndConqMult(a12,b22));
+            c21 = matrixAdd(divAndConqMult(a21, b11), divAndConqMult(a22,b21));
+            c22 = matrixAdd(divAndConqMult(a21, b12), divAndConqMult(a22,b22));
+
+            // combine the sub-matrices into the final multiplication product for this function call
+            for (int i = 0; i < (size / 2); i++) {
+                for (int j = 0; j < (size / 2); j++) {
+                    finalMatrix[i][j] = c11[i][j] + c12[i][j];
+                    finalMatrix[i][j + (size/2)] = c11[i][j + (size/2)] + c12[i][j + (size/2)];
+                    finalMatrix[i + (size/2)][j] = c21[i][j] + c22[i][j];
+                    finalMatrix[i + (size/2)][j + (size/2)] = c11[i][j + (size/2)] + c12[i][j + (size/2)];
+                }
+            }
+        }
+
+        //returns the result of this call of matrix multiplication
+        return finalMatrix;
     }
 
     /*
      * internal helper method that divides a 2d, square, 2^k size array into 4 quartiles,
      * and returns a 3d array containing a different quartile in each of its 4 layers
      */
-    private int[][][] matrixSplit(int[][] startMatrix) {
+    private static int[][][] matrixSplit(int[][] startMatrix) {
 
         // define newSize variable equal to half the width/height of the starting square matrix
         int newSize = startMatrix.length / 2;
@@ -63,6 +107,7 @@ public class MatrixAlgorithms {
         // define a 3d array, that can store 4 newSize x newSize matrices
         int[][][] newMatrix = new int[newSize][newSize][4];
 
+        // VISUALIZATION OF THE SPLIT:
         // Quartile 0 | Quartile 1
         // -----------|------------
         // Quartile 2 | Quartile 3
@@ -73,28 +118,28 @@ public class MatrixAlgorithms {
                 case 0:
                     for (int i = 0; i < newSize; i++) {
                         for (int j = 0; j < newSize; j++) {
-                            newMatrix[i][j][quartile] = startMatrix[i][j];
+                            newMatrix[quartile][i][j] = startMatrix[i][j];
                         }
                     } break;
                 // stores the second matrix quartile as a 2d array in the second layer of the 3d matrix
                 case 1:
                     for (int i = 0; i < newSize; i++) {
                         for (int j = 0; j < newSize; j++) {
-                            newMatrix[i][j][quartile] = startMatrix[i][j + newSize];
+                            newMatrix[quartile][i][j] = startMatrix[i][j + newSize];
                         }
                     } break;
                 // stores the third matrix quartile as a 2d array in the third layer of the 3d matrix
                 case 2:
                     for (int i = 0; i < newSize; i++) {
                         for (int j = 0; j < newSize; j++) {
-                            newMatrix[i][j][quartile] = startMatrix[i + newSize][j];
+                            newMatrix[quartile][i][j] = startMatrix[i + newSize][j];
                         }
                     } break;
                 // stores the fourth matrix quartile as a 2d array in the first layer of the 3d matrix
                 case 3:
                     for (int i = 0; i < newSize; i++) {
                         for (int j = 0; j < newSize; j++) {
-                            newMatrix[i][j][quartile] = startMatrix[i + newSize][j + newSize];
+                            newMatrix[quartile][i][j] = startMatrix[i + newSize][j + newSize];
                         }
                     } break;
             }
@@ -107,7 +152,7 @@ public class MatrixAlgorithms {
      * internal helper method that adds two square 2d arrays of identical dimensions,
      * and returns the sum
      */
-    private int[][] matrixAdd(int[][] matrixA, int[][] matrixB) {
+    private static int[][] matrixAdd(int[][] matrixA, int[][] matrixB) {
 
         // copy the first array to a new memory location
         int[][] sumMatrix = matrixA.clone();
