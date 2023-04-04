@@ -103,6 +103,27 @@ public class MatrixAlgorithms {
         return newMatrix;
     }
 
+    /*
+     * internal helper method that adds two square 2d arrays of identical dimensions,
+     * and returns the sum
+     */
+    private int[][] matrixAdd(int[][] matrixA, int[][] matrixB) {
+
+        // copy the first array to a new memory location
+        int[][] sumMatrix = matrixA.clone();
+        // define the length of the square matrices as a varaible
+        int size = sumMatrix.length;
+
+        // adds each value in the second array to the first array
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                sumMatrix[i][j] += matrixB[i][j];
+            }
+        }
+        // return the result
+        return sumMatrix;
+    }
+
     /**
      * This method takes two 2d int arrays of some size 2^k, where k is a positive integer, and returns
      * the product of their multiplication, using Strassen's matrix multiplication algorithm
