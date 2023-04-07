@@ -1,60 +1,180 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
 public class TestDriver {
 
     public static void main(String[] args) {
+        
+        boolean keepRunning = true;
+
+        Scanner input = new Scanner(System.in);
         /*
-        int[][] testCaseA = {
-            {1, 0},
-            {0, 1}
-        };
-        int[][] testCaseB = {
-            {5, 7},
-            {9, 23}
-        };
+        * MENU FOR DECIDING TO SELECT A TEST CASE
         */
-        int[][] testCaseA = {
-            {1, 0, 0, 0},
-            {0, 1, 0, 0},
-            {0, 0, 1, 0},
-            {0, 0, 0, 1}
-        };
+        while(keepRunning) {
 
-        int[][] testCaseB = {
-            {7, 1, 19, 40},
-            {0, 9, 72, 0},
-            {4, 0, 8, 44},
-            {0, 2, 2, 36}
-        };
+            
+            System.out.println("(1)Select a test case to display\n(0)Exit");
+            int testChoice = input.nextInt();
 
-        int[][] testCaseC_CLA = MatrixAlgorithms.classicalMult(testCaseA, testCaseB);
-        int[][] testCaseC_DAC = MatrixAlgorithms.divAndConqMult(testCaseA, testCaseB);
-        int[][] testCaseC_STR = MatrixAlgorithms.strassensMult(testCaseA, testCaseB);
+            if (testChoice == 1) {
 
-        System.out.print("Classical:\n");
+                boolean keepTesting = true;
+                List<int[]> caseList = new ArrayList<>();
 
-        for (int i = 0; i < testCaseC_CLA.length; i++) {
-            for (int j = 0; j < testCaseC_CLA.length; j++) {
-                System.out.print(testCaseC_CLA[i][j] + " ");
-            }
-            System.out.print("\n");
-        }
+                try {
+                    Scanner fileReader = new Scanner(new File("./testCases.txt"));
 
-        System.out.print("Divide and Conquer:\n");
+                    /*
+                     * TAKE TEST CASE FILE AND PARSE EACH CASE INTO AN ArrayList ENTRY
+                     */
+                    while(fileReader.hasNext()) {
 
-        for (int i = 0; i < testCaseC_DAC.length; i++) {
-            for (int j = 0; j < testCaseC_DAC.length; j++) {
-                System.out.print(testCaseC_DAC[i][j] + " ");
-            }
-            System.out.print("\n");
-        }
+                        String[] testCaseRaw =  fileReader.nextLine().split(":");
+                        int[] testCaseInt = new int[testCaseRaw.length];
 
-        System.out.print("Strassen's:\n");
+                        for (int i = 0; i < testCaseRaw.length; i++) {
+                            testCaseInt[i] = Integer.parseInt(testCaseRaw[i]);
+                        }
 
-        for (int i = 0; i < testCaseC_STR.length; i++) {
-            for (int j = 0; j < testCaseC_STR.length; j++) {
-                System.out.print(testCaseC_STR[i][j] + " ");
-            }
-            System.out.print("\n");
-        }
+                        caseList.add(testCaseInt);
+                    }
+                    fileReader.close();
+                    
+                } catch (FileNotFoundException e) {
+                    // Where in the world are the test cases????
+                    e.printStackTrace();
+                }
+
+                /*
+                * USER MENU FOR VIEWING INDIVIDUAL TEST CASES
+                */
+                while(keepTesting) {
+
+                    System.out.println("(1-10)Select a test case\n(0)Exit");
+                    int caseChoice = input.nextInt();
+                    if (caseChoice > 0 && caseChoice < 11) {
+
+                        //process user input to correctly align with ArrayList indexes
+                        caseChoice--;
+
+                        //declare 3 square matrices to use for the multiplicands and their product, as well as set variables for organizing the data in 2d arrays
+                        int[] chosenCase = caseList.get(caseChoice);
+                        int[][] testMatrixA, testMatrixB;
+
+                        //get the two multiplicands in the format of layers of a 3d array, and store them each in their own 2d array
+                        int[][][] inputMatrices = getMultiplicands(chosenCase);
+                        testMatrixA = inputMatrices[0];
+                        testMatrixB = inputMatrices[1];
+                    
+                        //display the test results
+                        testAlgos(testMatrixA, testMatrixB);
+                    } else
+                        keepTesting = false;
+                }
+
+            } else if(testChoice == 0)
+                keepRunning = false;
+            else
+                System.out.println("Error: Invalid input.");
+
+        } 
+
+        input.close();
     }
-    
+
+    private static int[][][] getMultiplicands(int[] rawProblem) {
+        int index = 1;
+        int size = rawProblem[0];
+        int[][][] returnMatrix = new int[2][size][size];
+
+        for(int i = 0; i < size; i++) {
+            for(int j = 0; j < size; j++) {
+                returnMatrix[0][i][j] = rawProblem[index];
+                index++;
+            }
+        }
+
+        for(int i = 0; i < size; i++) {
+            for(int j = 0; j < size; j++) {
+                returnMatrix[1][i][j] = rawProblem[index];
+                index++;
+            }
+        }
+
+        return returnMatrix;
+    }
+
+    private static double[] testAlgos(int[][] MatrixA, int[][] MatrixB) {
+
+        double startTime, endTime;        
+        int size = MatrixA.length;
+        double[] returnTimes = new double[3];
+        int[][] resultMatrix = new int[size][size];
+        System.out.println("Problem:");
+
+        for(int i = 0; i < size; i++) {
+            for(int j = 0; j < size; j++) {
+                System.out.print(MatrixA[i][j] + " ");
+            }
+            System.out.print("\n");
+        }
+
+        System.out.print("X\n");
+
+        for(int i = 0; i < size; i++) {
+            for(int j = 0; j < size; j++) {
+                System.out.print(MatrixB[i][j] + " ");
+            }
+            System.out.print("\n");
+        }
+
+        startTime = System.currentTimeMillis();
+        resultMatrix = MatrixAlgorithms.classicalMult(MatrixA, MatrixB);
+        endTime = System.currentTimeMillis();
+        returnTimes[0] = (endTime - startTime) / 1000;
+
+        System.out.print("Classical result:\n");
+
+        for(int i = 0; i < size; i++) {
+            for(int j = 0; j < size; j++) {
+                System.out.print(resultMatrix[i][j] + " ");
+            }
+            System.out.print("\n");
+        }
+
+        startTime = System.currentTimeMillis();
+        resultMatrix = MatrixAlgorithms.divAndConqMult(MatrixA, MatrixB);
+        endTime = System.currentTimeMillis();
+        returnTimes[1] = (endTime - startTime) / 1000;
+
+        System.out.print("Divide and Conquer result:\n");
+
+        for(int i = 0; i < size; i++) {
+            for(int j = 0; j < size; j++) {
+                System.out.print(resultMatrix[i][j] + " ");
+            }
+            System.out.print("\n");
+        }
+
+        startTime = System.currentTimeMillis();
+        resultMatrix = MatrixAlgorithms.strassensMult(MatrixA, MatrixB);
+        endTime = System.currentTimeMillis();
+        returnTimes[2] = (endTime - startTime) / 1000;
+
+        System.out.print("Strassen's result:\n");
+
+        for(int i = 0; i < size; i++) {
+            for(int j = 0; j < size; j++) {
+                System.out.print(resultMatrix[i][j] + " ");
+            }
+            System.out.print("\n");
+        }
+
+        return returnTimes;
+    }
 }
+    
