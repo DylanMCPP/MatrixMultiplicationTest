@@ -16,15 +16,23 @@ public class TestDriver {
         */
         while(keepRunning) {
 
-            
-            System.out.println("(1)Select a test case to display\n(0)Exit");
+            //Prompt the user on what program feature they want to use and take an integer input
+            System.out.println("(1)Select test cases to display\n(2)Generate 2^k x 2^k matrices with random values\n" +
+            "(3)Test Algorithm Speeds\n(0)Exit");
             int testChoice = input.nextInt();
 
+            //Runs if user chooses to run test cases
             if (testChoice == 1) {
 
+                //define a List to store all the entries in testCases.txt
                 boolean keepTesting = true;
                 List<int[]> caseList = new ArrayList<>();
 
+                /*
+                 * read testCases.txt file within this program's directory, store entires as arrays 
+                 * of integers in the arrayList, caseList
+                 * CATCH: a fileNotFoundException, if testCases.txt does not exist
+                */
                 try {
                     Scanner fileReader = new Scanner(new File("./testCases.txt"));
 
@@ -43,7 +51,6 @@ public class TestDriver {
                         caseList.add(testCaseInt);
                     }
                     fileReader.close();
-                    
                 } catch (FileNotFoundException e) {
                     // Where in the world are the test cases????
                     e.printStackTrace();
@@ -54,6 +61,10 @@ public class TestDriver {
                 */
                 while(keepTesting) {
 
+                    /*
+                     * Ask the user what test case they want to display
+                     * input: the test case #
+                     */
                     System.out.println("(1-10)Select a test case\n(0)Exit");
                     int caseChoice = input.nextInt();
                     if (caseChoice > 0 && caseChoice < 11) {
@@ -76,16 +87,23 @@ public class TestDriver {
                         keepTesting = false;
                 }
 
+            // end while loop if user selects 0, exit test case menu and return to main menu
             } else if(testChoice == 0)
                 keepRunning = false;
+            // re-prompt use if use enters invalid input
             else
                 System.out.println("Error: Invalid input.");
 
         } 
-
+        // close the user input scanner
         input.close();
     }
 
+    /**
+     * take an int array of (2 * n^2) length, and return two square 2d arrays of n * n dimensions
+     * @param rawProblem 1d integer array
+     * @return a 3d array with 2 layers, each layer containing a different n * n dimension 2d array, representing a square matrix
+     */
     private static int[][][] getMultiplicands(int[] rawProblem) {
         int index = 1;
         int size = rawProblem[0];
@@ -108,73 +126,67 @@ public class TestDriver {
         return returnMatrix;
     }
 
-    private static double[] testAlgos(int[][] MatrixA, int[][] MatrixB) {
+    /**
+     * Tests the speed of 3 matrix multiplication algorithms in miliseconds using java's currentTimeMillis() method
+     * @param matrixA first multiplicand
+     * @param matrixB second multiplicand
+     * @return an integer array of length 3, where the 1st entry is speed of classical, 2nd is speed of Divide &
+     * conquer, and 3rd is speed of strassen's
+     */
+    private static double[] testAlgos(int[][] matrixA, int[][] matrixB) {
 
         double startTime, endTime;        
-        int size = MatrixA.length;
         double[] returnTimes = new double[3];
-        int[][] resultMatrix = new int[size][size];
+        int[][] resultMatrix = new int[matrixA.length][matrixA[0].length];
         System.out.println("Problem:");
 
-        for(int i = 0; i < size; i++) {
-            for(int j = 0; j < size; j++) {
-                System.out.print(MatrixA[i][j] + " ");
-            }
-            System.out.print("\n");
-        }
+        printMatrix(matrixA);
 
         System.out.print("X\n");
 
-        for(int i = 0; i < size; i++) {
-            for(int j = 0; j < size; j++) {
-                System.out.print(MatrixB[i][j] + " ");
-            }
-            System.out.print("\n");
-        }
+        printMatrix(matrixA);
 
         startTime = System.currentTimeMillis();
-        resultMatrix = MatrixAlgorithms.classicalMult(MatrixA, MatrixB);
+        resultMatrix = MatrixAlgorithms.classicalMult(matrixA, matrixB);
         endTime = System.currentTimeMillis();
         returnTimes[0] = (endTime - startTime) / 1000;
 
         System.out.print("Classical result:\n");
 
-        for(int i = 0; i < size; i++) {
-            for(int j = 0; j < size; j++) {
-                System.out.print(resultMatrix[i][j] + " ");
-            }
-            System.out.print("\n");
-        }
+        printMatrix(resultMatrix);
 
         startTime = System.currentTimeMillis();
-        resultMatrix = MatrixAlgorithms.divAndConqMult(MatrixA, MatrixB);
+        resultMatrix = MatrixAlgorithms.divAndConqMult(matrixA, matrixB);
         endTime = System.currentTimeMillis();
         returnTimes[1] = (endTime - startTime) / 1000;
 
         System.out.print("Divide and Conquer result:\n");
 
-        for(int i = 0; i < size; i++) {
-            for(int j = 0; j < size; j++) {
-                System.out.print(resultMatrix[i][j] + " ");
-            }
-            System.out.print("\n");
-        }
+        printMatrix(resultMatrix);
 
         startTime = System.currentTimeMillis();
-        resultMatrix = MatrixAlgorithms.strassensMult(MatrixA, MatrixB);
+        resultMatrix = MatrixAlgorithms.strassensMult(matrixA, matrixB);
         endTime = System.currentTimeMillis();
         returnTimes[2] = (endTime - startTime) / 1000;
 
         System.out.print("Strassen's result:\n");
-
-        for(int i = 0; i < size; i++) {
-            for(int j = 0; j < size; j++) {
-                System.out.print(resultMatrix[i][j] + " ");
-            }
-            System.out.print("\n");
-        }
+        printMatrix(resultMatrix);
 
         return returnTimes;
+    }
+
+    /**
+     * Outputs a visual representation of a 2d array (positive integer values > 10^9 or negative integer values < 10^8 get cut off)
+     * @param matrix 2d array to be printed
+     */
+    private static void printMatrix(int[][] matrix) {
+        for(int i = 0; i < matrix.length; i++) {
+            System.out.print("| ");
+            for(int j = 0; j < matrix.length; j++) {
+                System.out.printf("%9d ", matrix[i][j]);
+            }
+            System.out.print(" |\n");
+        }
     }
 }
     
