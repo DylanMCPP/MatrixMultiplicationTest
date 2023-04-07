@@ -48,52 +48,62 @@ public class MatrixAlgorithms {
      * @return
      */
     public static int[][] divAndConqMult(int[][] matrixA, int[][] matrixB) {
-
         int size = matrixA.length;
         int[][] finalMatrix = new int[size][size];
-
-        if (size == 1)
+    
+        if (size == 1) {
             finalMatrix[0][0] = matrixA[0][0] * matrixB[0][0];
-        // else statement runs for any matrix larger than 1 x 1, and recursively calls until a 1 x 1 matrix is reached
-        else {
-
+        } else {
             // declare 8 sub-matrices, 4 for each multiplicand matrix
             int[][] a11, a12, a21, a22, b11, b12, b21, b22;
-
+    
             // define each sub-matrix as it's appropriate quartile for both multiplicands
             int[][][] matrixASplit = matrixSplit(matrixA);
-            a11 = matrixASplit[0].clone();
-            a12 = matrixASplit[1].clone();
-            a21 = matrixASplit[2].clone();
-            a22 = matrixASplit[3].clone();
-
+            a11 = copyOf(matrixASplit[0]);
+            a12 = copyOf(matrixASplit[1]);
+            a21 = copyOf(matrixASplit[2]);
+            a22 = copyOf(matrixASplit[3]);
+    
             int[][][] matrixBSplit = matrixSplit(matrixB);
-            b11 = matrixBSplit[0].clone();
-            b12 = matrixBSplit[1].clone();
-            b21 = matrixBSplit[2].clone();
-            b22 = matrixBSplit[3].clone();
-
+            b11 = copyOf(matrixBSplit[0]);
+            b12 = copyOf(matrixBSplit[1]);
+            b21 = copyOf(matrixBSplit[2]);
+            b22 = copyOf(matrixBSplit[3]);
+    
             // declare and compute sub-matrices with the addition helper method and recursive calls
             int[][] c11, c12, c21, c22;
-            c11 = matrixAdd(divAndConqMult(a11, b11), divAndConqMult(a12,b21));
-            c12 = matrixAdd(divAndConqMult(a11, b12), divAndConqMult(a12,b22));
-            c21 = matrixAdd(divAndConqMult(a21, b11), divAndConqMult(a22,b21));
-            c22 = matrixAdd(divAndConqMult(a21, b12), divAndConqMult(a22,b22));
-
+            c11 = matrixAdd(divAndConqMult(a11, b11), divAndConqMult(a12, b21));
+            c12 = matrixAdd(divAndConqMult(a11, b12), divAndConqMult(a12, b22));
+            c21 = matrixAdd(divAndConqMult(a21, b11), divAndConqMult(a22, b21));
+            c22 = matrixAdd(divAndConqMult(a21, b12), divAndConqMult(a22, b22));
+    
             // combine the sub-matrices into the final multiplication product for this function call
             for (int i = 0; i < (size / 2); i++) {
                 for (int j = 0; j < (size / 2); j++) {
-                    finalMatrix[i][j] = c11[i][j] + c12[i][j];
-                    finalMatrix[i][j + (size/2)] = c11[i][j + (size/2)] + c12[i][j + (size/2)];
-                    finalMatrix[i + (size/2)][j] = c21[i][j] + c22[i][j];
-                    finalMatrix[i + (size/2)][j + (size/2)] = c11[i][j + (size/2)] + c12[i][j + (size/2)];
+                    finalMatrix[i][j] = c11[i][j];
+                    finalMatrix[i][j + (size / 2)] = c12[i][j];
+                    finalMatrix[i + (size / 2)][j] = c21[i][j];
+                    finalMatrix[i + (size / 2)][j + (size / 2)] = c22[i][j];
                 }
             }
         }
-
+    
         //returns the result of this call of matrix multiplication
         return finalMatrix;
     }
+    
+    private static int[][] copyOf(int[][] original) {
+
+        int[][] copy = new int[original.length][original[0].length];
+        for (int i = 0; i < original.length; i++) {
+            for (int j = 0; j < original[0].length; j++) {
+                copy[i][j] = original[i][j];
+            }
+        }
+
+        return copy;
+    }
+    
 
     /*
      * internal helper method that divides a 2d, square, 2^k size array into 4 quartiles,
@@ -105,7 +115,7 @@ public class MatrixAlgorithms {
         int newSize = startMatrix.length / 2;
 
         // define a 3d array, that can store 4 newSize x newSize matrices
-        int[][][] newMatrix = new int[newSize][newSize][4];
+        int[][][] newMatrix = new int[4][newSize][newSize];
 
         // VISUALIZATION OF THE SPLIT:
         // Quartile 0 | Quartile 1
@@ -155,7 +165,7 @@ public class MatrixAlgorithms {
     private static int[][] matrixAdd(int[][] matrixA, int[][] matrixB) {
 
         // copy the first array to a new memory location
-        int[][] sumMatrix = matrixA.clone();
+        int[][] sumMatrix = copyOf(matrixA);
         // define the length of the square matrices as a varaible
         int size = sumMatrix.length;
 
@@ -180,8 +190,15 @@ public class MatrixAlgorithms {
         int size = matrixA.length;
         int[][] finalMatrix = new int[size][size];
 
-        if (size == 1)
-            finalMatrix[0][0] = matrixA[0][0] * matrixB[0][0];
+
+        if (size == 2) {
+
+            finalMatrix[0][0] = matrixA[0][0] * matrixB[0][0] + matrixA[0][1] * matrixB[1][0];
+            finalMatrix[0][1] = matrixA[0][0] * matrixB[0][1] + matrixA[0][1] * matrixB[1][1];
+            finalMatrix[1][0] = matrixA[1][0] * matrixB[0][0] + matrixA[1][1] * matrixB[1][0];
+            finalMatrix[1][1] = matrixA[1][0] * matrixB[0][1] + matrixA[1][1] * matrixB[1][1];
+
+        }
         // else statement runs for any matrix larger than 1 x 1, and recursively calls until a 1 x 1 matrix is reached
         else {
 
@@ -190,28 +207,28 @@ public class MatrixAlgorithms {
 
             // define each sub-matrix as it's appropriate quartile for both multiplicands
             int[][][] matrixASplit = matrixSplit(matrixA);
-            a11 = matrixASplit[0].clone();
-            a12 = matrixASplit[1].clone();
-            a21 = matrixASplit[2].clone();
-            a22 = matrixASplit[3].clone();
-
+            a11 = copyOf(matrixASplit[0]);
+            a12 = copyOf(matrixASplit[1]);
+            a21 = copyOf(matrixASplit[2]);
+            a22 = copyOf(matrixASplit[3]);
+    
             int[][][] matrixBSplit = matrixSplit(matrixB);
-            b11 = matrixBSplit[0].clone();
-            b12 = matrixBSplit[1].clone();
-            b21 = matrixBSplit[2].clone();
-            b22 = matrixBSplit[3].clone();
+            b11 = copyOf(matrixBSplit[0]);
+            b12 = copyOf(matrixBSplit[1]);
+            b21 = copyOf(matrixBSplit[2]);
+            b22 = copyOf(matrixBSplit[3]);
 
             // declare and compute strassen's 7 multiplications
             int[][] P, Q, R, S, T, U, V;
             P = strassensMult(matrixAdd(a11, a22), matrixAdd(b11,b22));
             Q = strassensMult(matrixAdd(a21, a22), b11);
             R = strassensMult(a11, matrixSub(b12,b22));
-            S = strassensMult(a22, matrixSub(b21, b22));
+            S = strassensMult(a22, matrixSub(b21, b11));
             T = strassensMult(matrixAdd(a11,a12), b22);
             U = strassensMult(matrixSub(a21, a11), matrixAdd(b11, b12));
             V = strassensMult(matrixSub(a12, a22), matrixAdd(b21, b22));
 
-            // declare and compute sub-matrices by adding and subtracting strassen's 7 multiplications
+            // compute sub-matrices by adding and subtracting strassen's 7 multiplications
             int[][] c11, c12, c21, c22;
             c11 = matrixAdd(matrixAdd(P, matrixSub(S, T)), V);
             c12 = matrixAdd(R, T);
@@ -222,10 +239,10 @@ public class MatrixAlgorithms {
             // combine the sub-matrices into the final multiplication product for this function call
             for (int i = 0; i < (size / 2); i++) {
                 for (int j = 0; j < (size / 2); j++) {
-                    finalMatrix[i][j] = c11[i][j] + c12[i][j];
-                    finalMatrix[i][j + (size/2)] = c11[i][j + (size/2)] + c12[i][j + (size/2)];
-                    finalMatrix[i + (size/2)][j] = c21[i][j] + c22[i][j];
-                    finalMatrix[i + (size/2)][j + (size/2)] = c11[i][j + (size/2)] + c12[i][j + (size/2)];
+                    finalMatrix[i][j] = c11[i][j];
+                    finalMatrix[i][j + (size / 2)] = c12[i][j];
+                    finalMatrix[i + (size / 2)][j] = c21[i][j];
+                    finalMatrix[i + (size / 2)][j + (size / 2)] = c22[i][j];
                 }
             }
         }
@@ -241,7 +258,7 @@ public class MatrixAlgorithms {
     private static int[][] matrixSub(int[][] matrixA, int[][] matrixB) {
 
         // copy the first array to a new memory location
-        int[][] sumMatrix = matrixA.clone();
+        int[][] sumMatrix = copyOf(matrixA);
         // define the length of the square matrices as a varaible
         int size = sumMatrix.length;
 
