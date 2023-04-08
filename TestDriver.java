@@ -1,12 +1,18 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.io.FileReader;
+
+import java.util.Random;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 
 public class TestDriver {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         
         boolean keepRunning = true;
 
@@ -19,10 +25,10 @@ public class TestDriver {
             //Prompt the user on what program feature they want to use and take an integer input
             System.out.println("(1)Select test cases to display\n(2)Generate 2^k x 2^k matrices with random values\n" +
             "(3)Test Algorithm Speeds\n(0)Exit");
-            int testChoice = input.nextInt();
+            int inpChoice = input.nextInt();
 
             //Runs if user chooses to run test cases
-            if (testChoice == 1) {
+            if (inpChoice == 1) {
 
                 //define a List to store all the entries in testCases.txt
                 boolean keepTesting = true;
@@ -33,28 +39,24 @@ public class TestDriver {
                  * of integers in the arrayList, caseList
                  * CATCH: a fileNotFoundException, if testCases.txt does not exist
                 */
-                try {
-                    Scanner fileReader = new Scanner(new File("./testCases.txt"));
+                Scanner fileReader = new Scanner(new File("./testCases.txt"));
 
-                    /*
-                     * TAKE TEST CASE FILE AND PARSE EACH CASE INTO AN ArrayList ENTRY
-                     */
-                    while(fileReader.hasNext()) {
+                /*
+                    * TAKE TEST CASE FILE AND PARSE EACH CASE INTO AN ArrayList ENTRY
+                    */
+                while(fileReader.hasNext()) {
 
-                        String[] testCaseRaw =  fileReader.nextLine().split(":");
-                        int[] testCaseInt = new int[testCaseRaw.length];
+                    String[] testCaseRaw =  fileReader.nextLine().split(":");
+                    int[] testCaseInt = new int[testCaseRaw.length];
 
-                        for (int i = 0; i < testCaseRaw.length; i++) {
-                            testCaseInt[i] = Integer.parseInt(testCaseRaw[i]);
-                        }
-
-                        caseList.add(testCaseInt);
+                    for (int i = 0; i < testCaseRaw.length; i++) {
+                        testCaseInt[i] = Integer.parseInt(testCaseRaw[i]);
                     }
-                    fileReader.close();
-                } catch (FileNotFoundException e) {
-                    // Where in the world are the test cases????
-                    e.printStackTrace();
+
+                    caseList.add(testCaseInt);
                 }
+                fileReader.close();
+
 
                 /*
                 * USER MENU FOR VIEWING INDIVIDUAL TEST CASES
@@ -86,9 +88,65 @@ public class TestDriver {
                     } else
                         keepTesting = false;
                 }
+            
+            // if the user selects "2", bring them to random matrix generation menu
+            }else if (inpChoice == 2) {
+
+                boolean keepGenerating = true;
+
+                //create BufferedWriter with append enabled, to write new multiplicand pairs to SquareMatrices.txt
+                BufferedWriter output = new BufferedWriter(new FileWriter("./SquareMatrices.txt", true));
+
+                while(keepGenerating) {
+
+                    System.out.println("Enter \"0\" to exit, or enter an integer value \"k\" for a pair of n^k x n^k dimension\n" + 
+                    "square matrices you want to generate and store, containing random integer values: ");
+                    int generateChoice = input.nextInt();
+
+                    if (generateChoice == 0)
+                        keepGenerating = false;
+                        
+                    /*
+                     * Cdoe block for randomly generating, and saving 2 square matrices of size 2^k * 2^k to a new
+                     * line in SquareMatrices.txt
+                     */
+                    else if (generateChoice >= 1) {
+
+                        // cast is okay, since we know that both the base and power are integers
+                        int size = (int)Math.pow(2, generateChoice);
+                        Random rand = new Random();
+                        
+                        int[] newMultiplicands = new int[1 + (size * size * 2)];
+
+                        newMultiplicands[0] = size;
+
+                        for (int i = 1; i < newMultiplicands.length; i++) {
+                                newMultiplicands[i] = rand.nextInt(-99, 99);
+                        }
+                        
+                        StringBuilder multiplicandValues = new StringBuilder();
+                        multiplicandValues.append(size);
+                        for (int i = 1; i < newMultiplicands.length; i++) {
+                            multiplicandValues.append(":");
+                            multiplicandValues.append(newMultiplicands[i]);
+                        }
+
+                        output.newLine();
+                        output.append(multiplicandValues);
+                        System.out.println("Done generating a " + size + " x " + size + "matrix.");
+
+                    } else 
+                        System.out.println("Error: Invalid input.");
+                }
+
+                output.close();
+
+            // if the user selects "3", bring them to algorithm timing menu
+            }else if (inpChoice == 3) {
+                boolean keepTiming = true;
 
             // end while loop if user selects 0, exit test case menu and return to main menu
-            } else if(testChoice == 0)
+            }else if(inpChoice == 0)
                 keepRunning = false;
             // re-prompt use if use enters invalid input
             else
