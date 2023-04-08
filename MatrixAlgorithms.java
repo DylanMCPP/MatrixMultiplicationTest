@@ -51,8 +51,14 @@ public class MatrixAlgorithms {
         int size = matrixA.length;
         int[][] finalMatrix = new int[size][size];
     
-        if (size == 1) {
-            finalMatrix[0][0] = matrixA[0][0] * matrixB[0][0];
+        
+        if (size == 2) {
+
+            finalMatrix[0][0] = matrixA[0][0] * matrixB[0][0] + matrixA[0][1] * matrixB[1][0];
+            finalMatrix[0][1] = matrixA[0][0] * matrixB[0][1] + matrixA[0][1] * matrixB[1][1];
+            finalMatrix[1][0] = matrixA[1][0] * matrixB[0][0] + matrixA[1][1] * matrixB[1][0];
+            finalMatrix[1][1] = matrixA[1][0] * matrixB[0][1] + matrixA[1][1] * matrixB[1][1];
+            
         } else {
             // declare 8 sub-matrices, 4 for each multiplicand matrix
             int[][] a11, a12, a21, a22, b11, b12, b21, b22;
