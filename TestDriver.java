@@ -1,13 +1,17 @@
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
-import java.io.FileReader;
 
 import java.util.Random;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 
 public class TestDriver {
@@ -84,7 +88,7 @@ public class TestDriver {
                         testMatrixB = inputMatrices[1];
                     
                         //display the test results
-                        testAlgos(testMatrixA, testMatrixB);
+                        testAlgos(testMatrixA, testMatrixB, true);
                     } else
                         keepTesting = false;
                 }
@@ -94,8 +98,11 @@ public class TestDriver {
 
                 boolean keepGenerating = true;
 
-                //create BufferedWriter with append enabled, to write new multiplicand pairs to SquareMatrices.txt
-                BufferedWriter output = new BufferedWriter(new FileWriter("./SquareMatrices.txt", true));
+                /*
+                * create BufferedWriter, to write new multiplicand pairs to SquareMatrices.txt
+                * OVERWRITES list of problems previously stored in SquareMatrices.txt
+                */ 
+                BufferedWriter output = new BufferedWriter(new FileWriter("./SquareMatrices.txt"));
 
                 while(keepGenerating) {
 
@@ -105,35 +112,18 @@ public class TestDriver {
 
                     if (generateChoice == 0)
                         keepGenerating = false;
-                        
+
                     /*
-                     * Cdoe block for randomly generating, and saving 2 square matrices of size 2^k * 2^k to a new
+                     * Code block for randomly generating, and saving 2 square matrices of size 2^k * 2^k to a new
                      * line in SquareMatrices.txt
                      */
                     else if (generateChoice >= 1) {
 
-                        // cast is okay, since we know that both the base and power are integers
-                        int size = (int)Math.pow(2, generateChoice);
-                        Random rand = new Random();
-                        
-                        int[] newMultiplicands = new int[1 + (size * size * 2)];
-
-                        newMultiplicands[0] = size;
-
-                        for (int i = 1; i < newMultiplicands.length; i++) {
-                                newMultiplicands[i] = rand.nextInt(-99, 99);
-                        }
-                        
-                        StringBuilder multiplicandValues = new StringBuilder();
-                        multiplicandValues.append(size);
-                        for (int i = 1; i < newMultiplicands.length; i++) {
-                            multiplicandValues.append(":");
-                            multiplicandValues.append(newMultiplicands[i]);
-                        }
-
+                        String newMultiplicands = generateMatrix(generateChoice);
+                        output.append(newMultiplicands);
                         output.newLine();
-                        output.append(multiplicandValues);
-                        System.out.println("Done generating a " + size + " x " + size + "matrix.");
+
+                        System.out.println("Done generating a " + Math.pow(2, generateChoice) + " x " + Math.pow(2, generateChoice) + "matrix.");
 
                     } else 
                         System.out.println("Error: Invalid input.");
@@ -143,7 +133,108 @@ public class TestDriver {
 
             // if the user selects "3", bring them to algorithm timing menu
             }else if (inpChoice == 3) {
-                boolean keepTiming = true;
+                
+                /*
+                 * READS AND STORES ALL MULTIPLICAND PAIR ENTRIES in SquareMatrices.txt
+                 * Then, performs 10 multiplication calculations on each pair with each of the 3 algorithms
+                 * displays the mean runtime for each algorithm based on the 10 trials, excluding the MAX and MIN
+                 */
+
+                // somewhat more efficient way of reading SquareMatrices.txt than used to read testCases.txt, since may be large
+                try (BufferedReader br = Files.newBufferedReader(Paths.get("SquareMatrices.txt"), StandardCharsets.UTF_8)) {
+                    
+                    // for loop to repeat the timing & averaging process for every entry
+                    for (String line = null; (line = br.readLine()) != null;) {
+                        String[] inputRaw = line.split(":");
+
+                        int[] inputInt = new int[inputRaw.length];
+
+                        // stores all entries, seperated by ":"  in an integer array
+                        for (int i = 0; i < inputRaw.length; i++) {
+                            inputInt[i] = Integer.parseInt(inputRaw[i]);
+                        }
+
+                        // converts 1d array into two defined square, multiplicand matrices
+                        int[][][] inputMatrices = getMultiplicands(inputInt);
+                        int[][] matrixA = inputMatrices[0];
+                        int[][] matrixB = inputMatrices[1];
+                    
+                        // allocates 10x3 array for the execution times
+                        double[][] timeTable = new double[10][3];
+
+                        // runs each algorithm 10 times and store execution time in a different column of the timeTable 2d array
+                        for (int i = 0; i < 10; i++) {
+                            timeTable[i] = testAlgos(matrixA, matrixB, false);
+                        }
+
+                        // display average execution time for classical multiplication
+                        System.out.println("Results for " + inputInt[0] + " x " + inputInt[0] + " matrix multiplication:");
+                        System.out.print("\nClassical: ");
+                        
+                        double average = 0;
+                        double[] classicalTimes = new double[10];
+
+                        for (int i = 0; i < 10; i++) {
+                            classicalTimes[i] = timeTable[i][0];
+                        }
+
+                        Arrays.sort(classicalTimes);
+                        classicalTimes[0] = 0;
+                        classicalTimes[9] = 9;
+
+                        for (int i = 1; i < 9; i++) {
+                            average += classicalTimes[i];
+                        }
+
+                        average = average / 8;
+
+                        System.out.print(average + " seconds");
+
+                        // display average execution time for classical multiplication
+                        System.out.print("\nDivide and Conquer: ");
+                        
+                        average = 0;
+                        double[] dACTimes = new double[10];
+
+                        for (int i = 0; i < 10; i++) {
+                            dACTimes[i] = timeTable[i][1];
+                        }
+
+                        Arrays.sort(dACTimes);
+                        dACTimes[0] = 0;
+                        dACTimes[9] = 9;
+
+                        for (int i = 1; i < 9; i++) {
+                            average += dACTimes[i];
+                        }
+
+                        average = average / 8;
+
+                        System.out.print(average + " seconds");
+
+                        // display average execution time for classical multiplication
+                        System.out.print("\nStrassens: ");
+                        
+                        average = 0;
+                        double[] strasTimes = new double[10];
+
+                        for (int i = 0; i < 10; i++) {
+                            strasTimes[i] = timeTable[i][2];
+                        }
+
+                        Arrays.sort(strasTimes);
+                        strasTimes[0] = 0;
+                        strasTimes[9] = 9;
+
+                        for (int i = 1; i < 9; i++) {
+                            average += strasTimes[i];
+                        }
+
+                        average = average / 8;
+
+                        System.out.print(average + " seconds\n");
+                    }
+                }
 
             // end while loop if user selects 0, exit test case menu and return to main menu
             }else if(inpChoice == 0)
@@ -191,44 +282,58 @@ public class TestDriver {
      * @return an integer array of length 3, where the 1st entry is speed of classical, 2nd is speed of Divide &
      * conquer, and 3rd is speed of strassen's
      */
-    private static double[] testAlgos(int[][] matrixA, int[][] matrixB) {
-
-        double startTime, endTime;        
+    private static double[] testAlgos(int[][] matrixA, int[][] matrixB, boolean print) {
+       
+        // allocate ram for array of times to return & result of multiplication
         double[] returnTimes = new double[3];
         int[][] resultMatrix = new int[matrixA.length][matrixA[0].length];
-        System.out.println("Problem:");
 
-        printMatrix(matrixA);
+        // visually display problem, if "print" is true
+        if (print) {
+            System.out.println("Problem:");
 
-        System.out.print("X\n");
+            printMatrix(matrixA);
 
-        printMatrix(matrixA);
+            System.out.print("X\n");
 
-        startTime = System.currentTimeMillis();
+            printMatrix(matrixA);
+        }
+
+
+        final double classicalStartTime = System.nanoTime();
         resultMatrix = MatrixAlgorithms.classicalMult(matrixA, matrixB);
-        endTime = System.currentTimeMillis();
-        returnTimes[0] = (endTime - startTime) / 1000;
+        final double classicalEndTime = System.nanoTime();
+        returnTimes[0] = (classicalEndTime - classicalStartTime) / 1000000000;
 
-        System.out.print("Classical result:\n");
+        // visually classical multiplication result, if "print" is true
+        if (print) {
+            System.out.print("Classical result:\n");
 
-        printMatrix(resultMatrix);
+            printMatrix(resultMatrix);
+        }
 
-        startTime = System.currentTimeMillis();
+        final double dACStartTime = System.nanoTime();
         resultMatrix = MatrixAlgorithms.divAndConqMult(matrixA, matrixB);
-        endTime = System.currentTimeMillis();
-        returnTimes[1] = (endTime - startTime) / 1000;
+        final double dACEndTime = System.nanoTime();
+        returnTimes[1] = (dACEndTime - dACStartTime) / 1000000000;
 
-        System.out.print("Divide and Conquer result:\n");
+        // visually Div & Conq multiplication result, if "print" is true
+        if (print) {
+            System.out.print("Divide and Conquer result:\n");
 
-        printMatrix(resultMatrix);
+            printMatrix(resultMatrix);
+        }
 
-        startTime = System.currentTimeMillis();
+        final double strasStartTime = System.nanoTime();
         resultMatrix = MatrixAlgorithms.strassensMult(matrixA, matrixB);
-        endTime = System.currentTimeMillis();
-        returnTimes[2] = (endTime - startTime) / 1000;
+        final double strasEndTime = System.nanoTime();
+        returnTimes[2] = (strasEndTime - strasStartTime) / 1000000000;
 
-        System.out.print("Strassen's result:\n");
-        printMatrix(resultMatrix);
+        // visually strassen's multiplication result, if "print" is true
+        if (print) {
+            System.out.print("Strassen's result:\n");
+            printMatrix(resultMatrix);
+        }
 
         return returnTimes;
     }
@@ -245,6 +350,29 @@ public class TestDriver {
             }
             System.out.print(" |\n");
         }
+    }
+
+    private static String generateMatrix(int k) {
+        // cast is okay, since we know that both the base and power are integers
+        int size = (int)Math.pow(2, k);
+        Random rand = new Random();
+        
+        int[] newMultiplicands = new int[1 + (size * size * 2)];
+
+        newMultiplicands[0] = size;
+
+        for (int i = 1; i < newMultiplicands.length; i++) {
+                newMultiplicands[i] = rand.nextInt(-99, 99);
+        }
+        
+        StringBuilder multiplicandValues = new StringBuilder();
+        multiplicandValues.append(size);
+        for (int i = 1; i < newMultiplicands.length; i++) {
+            multiplicandValues.append(":");
+            multiplicandValues.append(newMultiplicands[i]);
+        }
+        
+        return multiplicandValues.toString();
     }
 }
     
