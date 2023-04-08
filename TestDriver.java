@@ -188,7 +188,7 @@ public class TestDriver {
 
                         average = average / 8;
 
-                        System.out.print(average + " seconds");
+                        System.out.printf("%.9f seconds", average);
 
                         // display average execution time for classical multiplication
                         System.out.print("\nDivide and Conquer: ");
@@ -210,7 +210,7 @@ public class TestDriver {
 
                         average = average / 8;
 
-                        System.out.print(average + " seconds");
+                        System.out.printf("%.9f seconds", average);
 
                         // display average execution time for classical multiplication
                         System.out.print("\nStrassens: ");
@@ -232,7 +232,7 @@ public class TestDriver {
 
                         average = average / 8;
 
-                        System.out.print(average + " seconds\n");
+                        System.out.printf("%.9f seconds", average);
                     }
                 }
 
