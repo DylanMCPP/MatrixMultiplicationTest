@@ -296,7 +296,7 @@ public class TestDriver {
 
             System.out.print("X\n");
 
-            printMatrix(matrixA);
+            printMatrix(matrixB);
         }
 
 
