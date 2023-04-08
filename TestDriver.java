@@ -27,7 +27,7 @@ public class TestDriver {
         while(keepRunning) {
 
             //Prompt the user on what program feature they want to use and take an integer input
-            System.out.println("(1)Select test cases to display\n(2)Generate 2^k x 2^k matrices with random values\n" +
+            System.out.print("\n(1)Select test cases to display\n(2)Generate 2^k x 2^k matrices with random values\n" +
             "(3)Test Algorithm Speeds\n(0)Exit");
             int inpChoice = input.nextInt();
 
@@ -168,8 +168,8 @@ public class TestDriver {
                         }
 
                         // display average execution time for classical multiplication
-                        System.out.println("Results for " + inputInt[0] + " x " + inputInt[0] + " matrix multiplication:");
-                        System.out.print("\nClassical: ");
+                        System.out.println("\nResults for " + inputInt[0] + " x " + inputInt[0] + " matrix multiplication:");
+                        System.out.print("Classical: ");
                         
                         double average = 0;
                         double[] classicalTimes = new double[10];
